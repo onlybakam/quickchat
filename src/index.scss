@@ -1,0 +1,41 @@
+$blue: #00b9f2;
+$indigo: #007eb9;
+$purple: #527fff;
+// $pink:
+$red: #dd3f5b;
+$orange: #ff9900;
+// $yellow:
+// $green:
+$teal: #04ace0;
+$cyan: #28c3f3;
+$white: #ffffff;
+$gray-400: #e6e6e6;
+$gray-600: #bbbbbb;
+$gray-800: #828282;
+
+$primary: $orange;
+$secondary: #bbbbbb; //custom
+$success: #10dc60;
+$info: $cyan; //custom
+$warning: #ffce00;
+$danger: #f53d3d;
+$light: #f4f4f4;
+$dark: #222222;
+
+$theme-colors: (
+  'squidink': #31465f,
+  'bbb': #bbb,
+  'lightsquid': #55677d,
+  'ligthergray': #e6e6e6
+);
+
+$font-family-sans-serif: Amazon Ember, -apple-system, BlinkMacSystemFont,
+  'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji',
+  'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !default;
+
+@import 'bootstrap/scss/bootstrap';
+
+html,
+body {
+  height: 100%;
+}

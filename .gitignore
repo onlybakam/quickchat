@@ -1,0 +1,37 @@
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+# amplify
+.amplifyrc
+/amplify/**/build
+/amplify/**/parameters.json
+/amplify/**/cloudformation-template.json
+/amplify/.config
+/amplify/#current-cloud-backend
+/amplify/backend/auth
+/amplify/backend/storage
+/ampflify/backend/awscloudformation
+/amplify/backend/amplify-meta.json
+aws-exports.js
+
+# css
+*.css
+
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
