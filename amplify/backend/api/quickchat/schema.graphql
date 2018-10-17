@@ -1,0 +1,90 @@
+type Conversation
+  @model(
+    mutations: { create: "createConvo" }
+    queries: null
+    subscriptions: null
+  ) {
+  id: ID!
+  name: String!
+  createdAt: String
+  # Messages in this conversation
+  messages: [Message] @connection(name: "ConvoMsgs")
+  associated: [ConvoLink] @connection(name: "associatedLinks")
+}
+
+type Message @searchable @model(mutations: null, queries: null) {
+  id: ID!
+  content: String
+  createdAt: String
+  owner: String
+  # Flag denoting if this message has been accepted by the server or not.
+  isSent: Boolean
+  file: S3Object
+  messageConversationId: ID @custom(skipInput: true)
+  # The conversation this message belongs to
+  conversation: Conversation
+    @connection(name: "ConvoMsgs", sortField: "createdAt")
+}
+
+type S3Object {
+  key: String!
+  bucket: String!
+  region: String!
+}
+
+input S3ObjectInput {
+  bucket: String!
+  key: String!
+  region: String!
+  localUri: String
+  mimeType: String
+  visibility: String
+}
+
+type User
+  @searchable
+  @model(mutations: null, queries: { get: "getUser", list: null }) {
+  id: ID!
+  username: String!
+  # is the user registered?
+  registered: Boolean
+  # the user's conversations
+  userConversations: [ConvoLink] @connection(name: "UserLinks")
+}
+
+type ConvoLink
+  @searchable
+  @model(
+    mutations: { create: "createConvoLink", update: "updateConvoLink" }
+    queries: null
+    subscriptions: null
+  ) {
+  id: ID!
+  name: String
+  status: String
+  convoLinkUserId: ID @custom(skipInput: true)
+  user: User @connection(name: "UserLinks")
+  conversation: Conversation @connection(name: "associatedLinks")
+}
+
+type Mutation @custom {
+  registerUser: User @custom
+  createMessage(input: CustomCreateMessageInput!): Message
+    @custom(subscription: true, watchedFields: ["messageConversationId"])
+}
+
+type Query @custom {
+  getConvoMessages(convoId: ID!): Message @custom(connection: true)
+}
+
+type Subscription @custom {
+  onUpdateConvoLink(convoLinkUserId: ID, status: String): ConvoLink
+    @custom(on: "updateConvoLink")
+}
+
+input CustomCreateMessageInput {
+  id: ID!
+  messageConversationId: ID!
+  content: String!
+  file: S3ObjectInput
+}
