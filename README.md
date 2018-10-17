@@ -1,4 +1,4 @@
-# Amplify React
+# A Quich Chat App
 
 ## Set up
 
