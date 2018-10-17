@@ -3,7 +3,6 @@ import Downshift from 'downshift'
 import { Scrollbars } from 'react-custom-scrollbars'
 import PropTypes from 'prop-types'
 import onUpdateConvoLink from '../graphql/subscriptions/onUpdateConvoLink'
-import _cloneDeep from 'lodash.clonedeep'
 import _debounce from 'lodash.debounce'
 import SideList from './ConvoSideList'
 import { SearchResultListWithData } from './SearchResultList'
@@ -162,9 +161,19 @@ function createSubForConvoList(subscribeToMore, userId) {
         }
       }
     ) => {
-      console.log('updateQuery on convo subscription', prev, newConvo)
-      const current = _cloneDeep(prev)
-      current.getUser.userConversations.items.unshift(newConvo)
+      console.log(
+        'onUpdateConvoLink - updateQuery',
+        JSON.stringify(prev, null, 2)
+      )
+      const current = {
+        getUser: {
+          ...prev.getUser,
+          userConversations: {
+            items: [newConvo, ...prev.getUser.userConversations.items],
+            __typename: 'ModelConvoLinkConnection'
+          }
+        }
+      }
       return current
     }
   })

@@ -5,7 +5,6 @@ import { InputBarWithData } from './InputBar'
 import MessagePane from './MessagePane'
 import getConvoMessages from '../graphql/queries/getConvoMessages'
 import { graphql } from 'react-apollo'
-// import _get from 'lodash.get'
 
 class Messenger extends Component {
   render() {

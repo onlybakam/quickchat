@@ -1,15 +1,17 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import _get from 'lodash.get'
 
 const SideList = ({
   getMenuProps,
   getItemProps,
   selectedItem,
-  conversations
+  conversations = {}
 }) => {
-  const selItemId = selectedItem ? selectedItem.conversation.id : null
-  const items = _get(conversations, 'items', [])
+  const selItemId =
+    selectedItem && selectedItem.conversation
+      ? selectedItem.conversation.id
+      : null
+  const items = conversations.items || []
   return (
     <div className="section sidelist">
       <div {...getMenuProps()} className="list-group list-group-flush">

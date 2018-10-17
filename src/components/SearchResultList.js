@@ -1,7 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import search from '../graphql/queries/search'
-import { graphql } from 'react-apollo'
+import searchUsers from '../graphql/queries/searchUsers'
+import searchMessages from '../graphql/queries/searchMessages'
+import { graphql, compose } from 'react-apollo'
 import BarLoader from 'react-spinners/BarLoader'
 import moment from 'moment'
 
@@ -18,22 +19,32 @@ const SearchResultList = ({
   getMenuProps,
   getItemProps,
   selectedItem,
-  data = {},
+  userSearchData = {},
+  msgSearchData = {},
   conversations = { items: [] }
 }) => {
-  const { loading = false } = data
+  const {
+    loading: uLoading = false,
+    searchUsers: { items: users = [] } = {}
+  } = userSearchData
+  const {
+    loading: mLoading = false,
+    searchMessages: { items: messages = [] } = {}
+  } = msgSearchData
+
+  const data = { users, messages }
+
+  // console.log(JSON.stringify(data, null, 2))
+  console.log('loading', uLoading || mLoading)
   const convoMap = conversations.items.reduce((acc, cur) => {
     acc[cur.conversation.id] = cur.name
     return acc
   }, {})
   return (
     <div {...getMenuProps()} className="section sidelist">
-      <div className="user.ist d-flex flex-column">
-        {loading ? (
-          <DataLoading />
-        ) : (
-          <ResultLists {...{ data, getItemProps, selectedItem, convoMap }} />
-        )}
+      <div className="searchResultList d-flex flex-column">
+        <DataLoading isLoading={uLoading || mLoading} />
+        <ResultLists {...{ data, getItemProps, selectedItem, convoMap }} />
       </div>
     </div>
   )
@@ -44,31 +55,34 @@ SearchResultList.propTypes = {
   conversations: PropTypes.object,
   selectedItem: PropTypes.object,
   term: PropTypes.string,
-  data: PropTypes.object
+  userSearchData: PropTypes.object,
+  msgSearchData: PropTypes.object
 }
 
-const DataLoading = () => (
-  <div className="p-4 text-muted h5 text-center">
+const DataLoading = ({ isLoading = false }) => (
+  <div className="text-center" style={{ height: '5px' }}>
     <BarLoader
       {...{
+        loading: isLoading,
         color: '#527fff',
-        height: 10,
+        height: 5,
         heightUnit: 'px',
-        loading: true,
         width: 100,
         widthUnit: '%'
       }}
     />
   </div>
 )
+DataLoading.propTypes = {
+  isLoading: PropTypes.bool.isRequired
+}
 
-const ResultLists = ({ data = {}, getItemProps, selectedItem, convoMap }) => {
-  // const users = _get(data, 'searchUsers.items', [])
-  const {
-    searchUsers: { items: users = [] } = {},
-    searchMessages: { items: messages = [] } = {}
-  } = data
-
+const ResultLists = ({
+  data: { users, messages },
+  getItemProps,
+  selectedItem,
+  convoMap
+}) => {
   const totalLength = users.length + messages.length
   return (
     <React.Fragment>
@@ -192,32 +206,41 @@ MessageList.propTypes = {
 function buildMsgFilter(term, conversations = {}) {
   const items = conversations.items || []
   const convoIds = items.map(i => i.conversation.id)
-  const filter = convoIds.length
-    ? {
-        content: { regexp: `.*${term}.*` },
-        and: [
-          {
-            or: convoIds.map(id => ({ messageConversationId: { eq: id } }))
-          }
-        ]
+  const filter = {
+    content: { regexp: `.*${term}.*` },
+    and: [
+      {
+        or: convoIds.map(id => ({ messageConversationId: { eq: id } }))
       }
-    : {
-        id: { eq: '-1' }
-      }
-  console.log('msg filter', filter)
+    ]
+  }
+
   return filter
 }
 
-const SearchResultListWithData = graphql(search, {
-  skip: props => !props.term,
-  options: props => ({
-    variables: {
-      userTerm: `.*${props.term}.*`,
-      msgFilter: buildMsgFilter(props.term, props.conversations)
-    },
-    fetchPolicy: 'cache-and-network'
+const SearchResultListWithData = compose(
+  graphql(searchUsers, {
+    name: 'userSearchData',
+    skip: props => !props.term,
+    options: props => ({
+      variables: {
+        userTerm: `.*${props.term}.*`
+      },
+      fetchPolicy: 'cache-and-network'
+    })
+  }),
+  graphql(searchMessages, {
+    name: 'msgSearchData',
+    skip: props =>
+      !props.term || !props.conversations || !props.conversations.items.length,
+    options: props => ({
+      variables: {
+        msgFilter: buildMsgFilter(props.term, props.conversations)
+      },
+      fetchPolicy: 'cache-and-network'
+    })
   })
-})(SearchResultList)
+)(SearchResultList)
 
 export default SearchResultList
 export { SearchResultListWithData }
