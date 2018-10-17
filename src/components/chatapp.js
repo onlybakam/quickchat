@@ -15,6 +15,7 @@ function chatName(userName) {
   return `${userName} (chat)`
 }
 
+const processedConvo = []
 class ChatApp extends Component {
   state = {
     conversation: undefined,
@@ -134,8 +135,15 @@ class ChatApp extends Component {
       update: async (proxy, { data: { createConvo } }) => {
         console.log('update, ', createConvo)
         if (createConvo.id === '-1') {
+          console.log('update, exiting')
           return
         }
+        if (processedConvo.find(c => c.id === createConvo.id)) {
+          console.log('update, already processed', createConvo.id)
+          return
+        }
+        processedConvo.push(createConvo)
+        console.log('update, continue')
         let promises = []
         const me = this.props.data.getUser
         const otherChatName = chatName(me.username)

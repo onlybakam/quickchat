@@ -71,6 +71,7 @@ const doCreateMessage = (mutation, content, file, convoId, userId) => () => {
       }
     },
     update: (proxy, { data: { createMessage: newMsg } }) => {
+      console.log('doCreateMessage', newMsg)
       const QUERY = {
         query: getConvoMessages,
         variables: { convoId }
@@ -80,7 +81,10 @@ const doCreateMessage = (mutation, content, file, convoId, userId) => () => {
         getConvoMessages: {
           __typename: 'ModelMessageConnection',
           nextToken: prev.getConvoMessages.nextToken,
-          items: [newMsg, ...prev.getConvoMessages.items]
+          items: [
+            newMsg,
+            ...prev.getConvoMessages.items.filter(i => i.id !== newMsg.id)
+          ]
         }
       }
       proxy.writeQuery({ ...QUERY, data })
